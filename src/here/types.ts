@@ -1,8 +1,8 @@
 export interface HereResponse {
-	items: Item[];
+	items: Feature[];
 }
 
-export interface Item {
+export interface Feature {
 	title: string;
 	id: string;
 	politicalView: string;

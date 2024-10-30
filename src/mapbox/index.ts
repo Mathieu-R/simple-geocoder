@@ -3,8 +3,8 @@
 import ky from "ky";
 
 import { GeocoderUnifiedResult } from "../types";
-import { Feature, MapboxResponse } from "./types";
-import { createURLSearchParams, getError } from "../utils";
+import { Feature, MapboxResponse, MatchCode } from "./types";
+import { createURLSearchParams } from "../utils";
 
 type MapboxForwardRequestOptions = {
 	permanent?: boolean;
@@ -25,12 +25,21 @@ export async function forward(
 	query: string,
 	options: MapboxForwardRequestOptions = {}
 ) {
-	const params = { q: query, ...options, access_token: apiKey };
+	const params = { q: query, ...options, apiKey };
 	const response = await ky<MapboxResponse>(`${baseUrl}/forward`, {
 		searchParams: createURLSearchParams(params),
 	}).json();
 
 	return response.features.map((feature) => formatResult(feature));
+}
+
+function getConfidence(matchCode: MatchCode) {
+	return (
+		matchCode.address_number === "matched" &&
+		matchCode.street === "matched" &&
+		matchCode.postcode === "matched" &&
+		matchCode.country === "matched"
+	);
 }
 
 function formatResult(result: Feature) {
@@ -59,7 +68,9 @@ function formatResult(result: Feature) {
 		extra: {
 			id,
 			bbox: properties.bbox ?? undefined,
-			match: properties.match_code,
+			confidence: Number(
+				properties.match_code && getConfidence(properties.match_code)
+			),
 		},
 	};
 

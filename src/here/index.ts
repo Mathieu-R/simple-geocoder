@@ -1,67 +1,66 @@
 // https://www.here.com/docs/bundle/geocoding-and-search-api-v7-api-reference/page/index.html#/paths/~1geocode/get
 
-// https://docs.mapbox.com/api/search/geocoding/#forward-geocoding-with-search-text-input
-
 import ky from "ky";
+import countries from "i18n-iso-countries";
 
 import { GeocoderUnifiedResult } from "../types";
 import { Feature, HereResponse } from "./types";
 import { createURLSearchParams, getError } from "../utils";
 
-type MapboxForwardRequestOptions = {
-	permanent?: boolean;
-	autocomplete?: boolean;
-	bbox?: number;
-	country?: string;
-	format?: string;
-	language?: string;
-	proximity?: string;
+type HereForwardRequestOptions = {
+	at?: string;
+	in?: string;
+	qq?: string;
 	types?: string;
-	worldview?: string;
+	lang?: string;
+	limit?: string;
+	politicalView?: string;
+	show?: string;
+	showMapReferences?: string;
+	showNavAttributes?: string;
 };
 
-const baseUrl = "https://api.mapbox.com/search/geocode/v6";
+const baseUrl = "search.hereapi.com/v1";
 
 export async function forward(
 	apiKey: string,
 	query: string,
-	options: MapboxForwardRequestOptions = {}
+	options: HereForwardRequestOptions = {}
 ) {
 	const params = { q: query, ...options, access_token: apiKey };
-	const response = await ky<MapboxResponse>(`${baseUrl}/forward`, {
-		searchParams: createURLSearchParams(params),
-	}).json();
+	const response = await ky<HereResponse>(
+		`https://geocode.${baseUrl}/geocode`,
+		{
+			searchParams: createURLSearchParams(params),
+		}
+	).json();
 
-	return response.features.map((feature) => formatResult(feature));
+	return response.items.map((feature) => formatResult(feature));
 }
 
-function formatResult(result: Feature) {
-	const { properties, id } = result;
-	const { context } = properties;
+function formatResult(feature: Feature) {
+	const { address, position, scoring, id } = feature;
 
 	const formatted: GeocoderUnifiedResult = {
-		formattedAddress: properties.full_address,
-		latitude: properties.coordinates.latitude,
-		longitude: properties.coordinates.longitude,
-		country: context.country?.name,
-		countryCode: context.country?.country_code,
-		state: context.region?.name,
-		city: context.place?.name,
-		zipcode: context.postcode?.name,
-		district: context.district?.name,
-		streetName:
-			properties.feature_type === "address"
-				? context.address?.street_name
-				: undefined,
-		streetNumber:
-			properties.feature_type === "address"
-				? context.address?.address_number
-				: undefined,
-		neighbourhood: context.neighborhood?.name || context.locality?.name,
+		formattedAddress: address.label,
+		latitude: position.lat,
+		longitude: position.lng,
+		country: address.countryName,
+		countryCode: countries.alpha3ToAlpha2(address.countryCode),
+		state: address.state,
+		county: address.county,
+		city: address.city,
+		zipcode: address.postalCode,
+		district: address.district,
+		streetName: address.street,
+		streetNumber: address.houseNumber,
+		building: address.building,
 		extra: {
 			id,
-			bbox: properties.bbox ?? undefined,
-			match: properties.match_code,
+			confidence:
+				"queryScore" in scoring
+					? Number.parseFloat(scoring.queryScore.toFixed(2))
+					: 0,
 		},
 	};
 
