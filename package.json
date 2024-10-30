@@ -1,0 +1,21 @@
+{
+  "name": "simple-geocoder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "exports": {
+    "./mapbox": {
+      "import": "./dist/mapbox/index",
+      "require": "./dist/mapbox/index"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ky": "^1.7.2"
+  }
+}
