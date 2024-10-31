@@ -1,14 +1,17 @@
 {
 	"name": "simple-geocoder",
 	"version": "1.0.0",
-	"description": "",
+	"description": "Simple package to geocode with multiple providers.",
+	"keywords": [
+		"geocoding"
+	],
+	"author": "Mathieu-R",
+	"license": "MIT",
 	"type": "module",
 	"exports": {
-		".": {
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
-		}
+		"types": "./dist/index.d.ts",
+		"import": "./dist/index.js",
+		"require": "./dist/index.cjs"
 	},
 	"scripts": {
 		"start": "tsup --watch",
@@ -17,9 +20,6 @@
 		"prettier": "prettier --cache --write .",
 		"prettier:check": "prettier --cache --check ."
 	},
-	"keywords": [],
-	"author": "",
-	"license": "MIT",
 	"dependencies": {
 		"i18n-iso-countries": "^7.12.0",
 		"ky": "^1.7.2"

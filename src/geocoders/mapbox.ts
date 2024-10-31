@@ -2,9 +2,10 @@
 
 import ky from "ky";
 
-import { GeocoderUnifiedResult } from "../types";
-import { Feature, MapboxResponse, MatchCode } from "./types";
+import { GeocoderUnifiedResult } from "../types/common";
+import { Feature, MapboxResponse, MatchCode } from "../types/mapbox";
 import { createURLSearchParams } from "../utils";
+import { DEFAULT_LIMIT } from "../config";
 
 type MapboxForwardRequestOptions = {
 	permanent?: boolean;
@@ -13,6 +14,7 @@ type MapboxForwardRequestOptions = {
 	country?: string;
 	format?: string;
 	language?: string;
+	limit?: number;
 	proximity?: string;
 	types?: string;
 	worldview?: string;
@@ -20,12 +22,27 @@ type MapboxForwardRequestOptions = {
 
 const baseUrl = "https://api.mapbox.com/search/geocode/v6";
 
-export async function forward(
+export async function MapboxForwardGeocode(
 	apiKey: string,
 	query: string,
-	options: MapboxForwardRequestOptions = {}
+	language?: string,
+	country?: string,
+	limit?: string,
+	options?: MapboxForwardRequestOptions
 ) {
-	const params = { q: query, ...options, apiKey };
+	options = options || {};
+	let params = { q: query, ...options, limit: limit || DEFAULT_LIMIT, access_token: apiKey };
+
+	if (language) {
+		params = { ...params, language };
+	}
+
+	if (country) {
+		params = { ...params, country };
+	}
+
+
+
 	const response = await ky<MapboxResponse>(`${baseUrl}/forward`, {
 		searchParams: createURLSearchParams(params),
 	}).json();
@@ -33,18 +50,21 @@ export async function forward(
 	return response.features.map((feature) => formatResult(feature));
 }
 
-function getConfidence(matchCode: MatchCode) {
-	return (
+function isTrustable(matchCode: MatchCode) {
+	console.log(matchCode);
+	return Number(
 		matchCode.address_number === "matched" &&
-		matchCode.street === "matched" &&
-		matchCode.postcode === "matched" &&
-		matchCode.country === "matched"
+			matchCode.street === "matched" &&
+			matchCode.postcode === "matched" &&
+			matchCode.country === "matched"
 	);
 }
 
 function formatResult(result: Feature) {
 	const { properties, id } = result;
 	const { context } = properties;
+
+	console.log(properties.match_code);
 
 	const formatted: GeocoderUnifiedResult = {
 		formattedAddress: properties.full_address,
@@ -68,9 +88,9 @@ function formatResult(result: Feature) {
 		extra: {
 			id,
 			bbox: properties.bbox ?? undefined,
-			confidence: Number(
-				properties.match_code && getConfidence(properties.match_code)
-			),
+			confidence: properties.match_code
+				? isTrustable(properties.match_code)
+				: 0,
 		},
 	};
 

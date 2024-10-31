@@ -3,9 +3,10 @@
 import ky from "ky";
 import countries from "i18n-iso-countries";
 
-import { GeocoderUnifiedResult } from "../types";
-import { Feature, HereResponse } from "./types";
+import { GeocoderUnifiedResult } from "../types/common";
+import { Feature, HereResponse } from "../types/here";
 import { createURLSearchParams, getError } from "../utils";
+import { DEFAULT_LIMIT } from "../config";
 
 type HereForwardRequestOptions = {
 	at?: string;
@@ -22,12 +23,25 @@ type HereForwardRequestOptions = {
 
 const baseUrl = "search.hereapi.com/v1";
 
-export async function forward(
+export async function HereForwardGeocode(
 	apiKey: string,
 	query: string,
-	options: HereForwardRequestOptions = {}
+	language?: string,
+	country?: string,
+	limit?: number,
+	options?: HereForwardRequestOptions
 ) {
-	const params = { q: query, ...options, access_token: apiKey };
+	options = options || {}
+	let params = { q: query, ...options, limit: limit || DEFAULT_LIMIT, access_token: apiKey };
+
+	if (language) {
+		params = { ...params, lang: language };
+	}
+
+	if (country) {
+		params = { ...params, in: `countryCode:${country}`};
+	}
+
 	const response = await ky<HereResponse>(
 		`https://geocode.${baseUrl}/geocode`,
 		{

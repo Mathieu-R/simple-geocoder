@@ -1,3 +1,3 @@
-export { forward as GoogleForwardGeocode } from "./google";
-export { forward as HereForwardGeocode } from "./here"
-export { forward as MapboxForwardGeocode } from "./mapbox";
+export { GoogleForwardGeocode } from "./geocoders/google";
+export { HereForwardGeocode } from "./geocoders/here"
+export { MapboxForwardGeocode } from "./geocoders/mapbox";

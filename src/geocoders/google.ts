@@ -2,8 +2,8 @@
 
 import ky from "ky";
 import { createURLSearchParams, snakeToCamel } from "../utils";
-import { Feature, GoogleResponse } from "./types";
-import { GeocoderUnifiedResult } from "../types";
+import { Feature, GoogleResponse } from "../types/google";
+import { GeocoderUnifiedResult } from "../types/common";
 
 type GoogleForwardRequestOptions = {
 	bounds?: string;
@@ -29,12 +29,24 @@ type Components = {
 
 const baseUrl = "https://maps.googleapis.com/maps/api";
 
-export async function forward(
+export async function GoogleForwardGeocode(
 	apiKey: string,
 	query: string,
-	options: GoogleForwardRequestOptions = {}
+	language?: string,
+	country?: string,
+	options?: GoogleForwardRequestOptions
 ) {
-	const params = { address: query, ...options, key: apiKey };
+	options = options || {}
+	let params = { address: query, ...options, key: apiKey };
+
+	if (language) {
+		params = { ...params, language}
+	}
+
+	if (country) {
+		params = {...params, region: country}
+	}
+
 	const response = await ky<GoogleResponse>(`${baseUrl}/geocode/json`, {
 		searchParams: createURLSearchParams(params),
 	}).json();
