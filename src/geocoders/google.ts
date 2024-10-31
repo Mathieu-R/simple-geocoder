@@ -34,25 +34,48 @@ export async function GoogleForwardGeocode(
   query: string,
   language?: string,
   country?: string,
-  limit?: string,
+  limit?: number,
   options?: GoogleForwardRequestOptions,
 ) {
-  options = options || {};
-  let params = { address: query, ...options, key: apiKey };
+  const { url, searchParams } = getUrlAndSearchParams(
+		apiKey,
+		query,
+		language,
+		country,
+		limit,
+		options
+  );
 
-  if (language) {
-    params = { ...params, language };
-  }
-
-  if (country) {
-    params = { ...params, region: country };
-  }
-
-  const response = await ky<GoogleResponse>(`${baseUrl}/geocode/json`, {
-    searchParams: createURLSearchParams(params),
+  const response = await ky<GoogleResponse>(url, {
+    searchParams
   }).json();
 
   return response.results.map((feature) => formatResult(feature));
+}
+
+function getUrlAndSearchParams(
+	apiKey: string,
+	query: string,
+	language?: string,
+	country?: string,
+	limit?: number,
+	options?: GoogleForwardRequestOptions
+) {
+	options = options || {};
+	let params = { address: query, ...options, key: apiKey };
+
+	if (language) {
+		params = { ...params, language };
+	}
+
+	if (country) {
+		params = { ...params, region: country };
+  }
+  
+  return {
+		url: `${baseUrl}/geocode/json`,
+		searchParams: createURLSearchParams(params),
+  };
 }
 
 function formatResult(feature: Feature) {
