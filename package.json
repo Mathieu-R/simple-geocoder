@@ -1,31 +1,37 @@
 {
-	"name": "simple-geocoder",
-	"version": "1.0.0",
-	"description": "Simple package to geocode with multiple providers.",
-	"keywords": [
-		"geocoding"
-	],
-	"author": "Mathieu-R",
-	"license": "MIT",
-	"type": "module",
-	"exports": {
-		"types": "./dist/index.d.ts",
-		"import": "./dist/index.js",
-		"require": "./dist/index.cjs"
-	},
-	"scripts": {
-		"start": "tsup --watch",
-		"build": "tsup",
-		"typecheck": "tsc --noEmit",
-		"prettier": "prettier --cache --write .",
-		"prettier:check": "prettier --cache --check ."
-	},
-	"dependencies": {
-		"i18n-iso-countries": "^7.12.0",
-		"ky": "^1.7.2"
-	},
-	"devDependencies": {
-		"tsup": "^8.3.5",
-		"typescript": "^5.6.3"
-	}
+  "name": "simple-multi-geocoder",
+  "version": "1.0.3",
+  "description": "Simple package to geocode with multiple providers.",
+  "keywords": [
+    "geocoding"
+  ],
+  "files": [
+    "dist",
+    "src"
+  ],
+  "author": "Mathieu-R",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "scripts": {
+    "start": "tsup --watch",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "prettier": "prettier --cache --write .",
+    "prettier:check": "prettier --cache --check .",
+    "prepublish": "pnpm run build"
+  },
+  "dependencies": {
+    "i18n-iso-countries": "^7.12.0",
+    "ky": "^1.7.2"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3"
+  }
 }
